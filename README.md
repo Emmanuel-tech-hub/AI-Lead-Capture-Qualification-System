@@ -1,8 +1,20 @@
 # 🚀 AI Lead Capture, Qualification & Follow-up System
 
+
+![n8n](https://img.shields.io/badge/n8n-Automation-orange)
+![OpenAI](https://img.shields.io/badge/OpenAI-LLM-green)
+![Google_Sheets](https://img.shields.io/badge/Google_Sheets-Database-success)
+![Gmail](https://img.shields.io/badge/Gmail-Email-red)
+![License](https://img.shields.io/badge/License-MIT-blue)
+
+
+
+
 An AI-powered workflow that automatically captures, validates, qualifies, and nurtures inbound leads, ensuring every enquiry is organized, responded to, and tracked without manual intervention.
 
 Built with: n8n • OpenAI • Gmail • Google Sheets • API Integrations
+
+
 
 
 # 📌 Business Problem
