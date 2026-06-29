@@ -38,27 +38,35 @@ This workflow automatically:
 Lead Form
     │
     ▼
+    
 Webhook
     │
     ▼
+    
 Clean Data
     │
     ▼
+    
 Validate
     │
     ▼
+    
 Standardize Data
     │
     ▼
+    
 Store Lead (Google Sheets)
     │
     ▼
+    
 Confirmation Email
     │
     ▼
+    
 AI Lead Classification
     │
     ▼
+    
 Decision Router
  ┌────────┼────────┐
  │        │        │
@@ -70,10 +78,10 @@ Intent   Intent    Intent
 Follow-up Emails
  │
  ▼
+ 
 Update Lead Status
 
 
----
 
 # ⚙ Technologies Used
 
