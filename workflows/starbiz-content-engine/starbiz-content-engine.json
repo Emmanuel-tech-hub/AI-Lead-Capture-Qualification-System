@@ -1,0 +1,1263 @@
+{
+  "name": "Starbiz Content Engine (YouTube via Blotato)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "2dfe1d17-b923-4596-8f58-6e0c783e677e",
+      "name": "Manual Run (Test)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1,3,5"
+            }
+          ]
+        }
+      },
+      "id": "d046574e-b670-4eaa-89c7-0df628a44701",
+      "name": "Schedule: Mon/Wed/Fri 9am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7172267e-1807-4668-9635-4a5f5da5497b",
+              "name": "brandName",
+              "value": "Starbiz Cleaning LLC",
+              "type": "string"
+            },
+            {
+              "id": "8067bb37-92c5-4eb1-a57b-0317bfee1438",
+              "name": "city",
+              "value": "Suwanee, GA",
+              "type": "string"
+            },
+            {
+              "id": "ecc4bc3a-3e2c-4d54-8448-220e0d4c978f",
+              "name": "website",
+              "value": "www.starbizcleaning.com",
+              "type": "string"
+            },
+            {
+              "id": "b32ba1fa-00f8-47cd-b236-e4508309163d",
+              "name": "phone",
+              "value": "(XXX) XXX-XXXX",
+              "type": "string"
+            },
+            {
+              "id": "4ac5299d-cb4a-4e93-86ee-73fb72e3d984",
+              "name": "telegramChatId",
+              "value": "YOUR_TELEGRAM_CHAT_ID",
+              "type": "string"
+            },
+            {
+              "id": "267ffb30-4be8-4556-801f-00834baeeebb",
+              "name": "googleSheetId",
+              "value": "YOUR_GOOGLE_SHEET_ID",
+              "type": "string"
+            },
+            {
+              "id": "7f480a33-27f3-4e3b-92b5-75a31e353356",
+              "name": "claudeModel",
+              "value": "claude-opus-5-5",
+              "type": "string"
+            },
+            {
+              "id": "b0c1b8b0-07b6-4d9e-94e4-ab230a2f842f",
+              "name": "videoSubmitUrl",
+              "value": "https://YOUR-VIDEO-PROVIDER/api/generate",
+              "type": "string"
+            },
+            {
+              "id": "cfd63bc9-163d-4682-b576-f8951ab76235",
+              "name": "videoStatusUrlTemplate",
+              "value": "https://YOUR-VIDEO-PROVIDER/api/jobs/{id}",
+              "type": "string"
+            },
+            {
+              "id": "83d4551c-858a-48a8-bfc4-4edf2c4b7e3a",
+              "name": "videoModel",
+              "value": "kling-3.0",
+              "type": "string"
+            },
+            {
+              "id": "ef054ba5-b3ad-46ef-87c4-ee4c18790d59",
+              "name": "aspectRatio",
+              "value": "9:16",
+              "type": "string"
+            },
+            {
+              "id": "4dac1fd5-9f60-45c7-bd21-874ec94f1990",
+              "name": "videoSeconds",
+              "value": 8,
+              "type": "number"
+            },
+            {
+              "id": "2c386d7b-b5b4-4003-827a-c64c7da70f49",
+              "name": "maxPollAttempts",
+              "value": 20,
+              "type": "number"
+            },
+            {
+              "id": "fb98b55b-d2dd-4352-965e-c1aca768b1dd",
+              "name": "blotatoYoutubeAccountId",
+              "value": "YOUR_BLOTATO_YOUTUBE_ACCOUNT_ID",
+              "type": "string"
+            },
+            {
+              "id": "d6836e44-65da-4b71-a6b9-1e43e0ac8055",
+              "name": "youtubePrivacy",
+              "value": "public",
+              "type": "string"
+            },
+            {
+              "id": "402a0b1c-b507-4902-a6ed-db880ee11770",
+              "name": "wordsToCheck",
+              "value": "cheap,guarantee,best in,#1,free,lowest price,100%,cure,kill all germs",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5e763883-490b-4bdf-a110-6822658f8853",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.googleSheetId }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Topics"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "New"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "efa76e53-d7af-41d0-a354-34195d416df6",
+      "name": "Get Topic Ideas",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        440,
+        300
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Picks the first \"New\" topic from the sheet. Falls back to a built-in list if the sheet is empty.\nconst cfg = $('Config').first().json;\nconst rows = $input.all().map(i => i.json).filter(r => r && String(r.Topic || '').trim());\n\nconst fallback = [\n  'How often should you deep clean your kitchen?',\n  '3 bathroom cleaning mistakes most people make',\n  'What a move-out clean includes (and why it saves your deposit)',\n  'Why offices that get cleaned regularly have fewer sick days',\n  'The 10-minute daily reset that keeps your home tidy',\n  'What to expect from your first professional house cleaning',\n];\n\nif (rows.length) {\n  const r = rows[0];\n  return [{ json: { topic: String(r.Topic).trim(), notes: r.Notes || '', rowNumber: r.row_number ?? null, fromSheet: true, cfg } }];\n}\nconst pick = fallback[Math.floor(Math.random() * fallback.length)];\nreturn [{ json: { topic: pick, notes: '', rowNumber: null, fromSheet: false, cfg } }];\n"
+      },
+      "id": "58d8833e-5d76-4b8e-86c4-fa7b0b6e24e6",
+      "name": "Pick Topic",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "anthropic-beta",
+              "value": "server-side-fallback-2026-07-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: $json.cfg.claudeModel,\n  max_tokens: 4000,\n  fallbacks: 'default',\n  output_config: {\n    effort: 'medium',\n    format: {\n      type: 'json_schema',\n      schema: {\n        type: 'object',\n        additionalProperties: false,\n        required: ['title', 'description', 'hashtags', 'videoPrompt', 'hook'],\n        properties: {\n          title: { type: 'string', description: 'YouTube Shorts title, max 90 characters, no clickbait' },\n          hook: { type: 'string', description: 'First spoken/visual line, max 12 words' },\n          description: { type: 'string', description: '3-6 short lines: the tip, then a call to action with website and phone' },\n          hashtags: { type: 'array', items: { type: 'string' }, description: '5-8 hashtags without the # symbol' },\n          videoPrompt: { type: 'string', description: 'Detailed prompt for an AI video model: one ' + $json.cfg.videoSeconds + '-second vertical shot, camera movement, lighting, setting' }\n        }\n      }\n    }\n  },\n  system: `You write short-form video content for ${$json.cfg.brandName}, a family-owned residential and commercial cleaning company in ${$json.cfg.city}. Audience: busy homeowners, renters and local office managers. Tone: warm, helpful, confident, never pushy. Rules: no prices, no guarantees, no health or medical claims, never claim results you cannot show, never describe fake before/after results, no competitor names. The video clip is AI-generated, so the visual prompt must describe a realistic, clean, bright scene with no on-screen text, no logos and no recognizable real people.`,\n  messages: [{\n    role: 'user',\n    content: 'Create one YouTube Short about this topic: ' + $json.topic +\n      ($json.notes ? '\\nExtra notes: ' + $json.notes : '') +\n      '\\nCall to action details - website: ' + $json.cfg.website + ', phone: ' + $json.cfg.phone + '.'\n  }]\n}) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "9f8481aa-17c5-4671-9325-661704a3d995",
+      "name": "Write Script (Claude)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Reads Claude's structured JSON answer and prepares everything the review step needs.\nconst res = $input.first().json;\nconst prev = $('Pick Topic').first().json;\nconst cfg = prev.cfg;\n\nif (res.stop_reason === 'refusal') {\n  throw new Error('Claude declined this topic: ' + prev.topic + '. Pick a different topic in the sheet.');\n}\nconst textBlock = (res.content || []).find(b => b.type === 'text');\nif (!textBlock) throw new Error('No text in Claude response: ' + JSON.stringify(res).slice(0, 500));\nconst s = JSON.parse(textBlock.text);\n\nconst tags = (s.hashtags || []).map(t => '#' + String(t).replace(/^#/, '').replace(/\\s+/g, '')).join(' ');\nconst title = String(s.title).slice(0, 100);\nconst description = (s.description.trim() + '\\n\\n' + tags).slice(0, 4900);\n\n// Flag words you asked to double-check before anything is posted.\nconst words = String(cfg.wordsToCheck || '').split(',').map(w => w.trim()).filter(Boolean);\nconst haystack = (title + ' ' + description).toLowerCase();\nconst flagged = words.filter(w => haystack.includes(w.toLowerCase()));\n\nconst esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\n\nreturn [{ json: {\n  topic: prev.topic, rowNumber: prev.rowNumber, cfg,\n  title, description, hook: s.hook, videoPrompt: s.videoPrompt,\n  flagged,\n  titleHtml: esc(title), descriptionHtml: esc(description),\n}}];\n"
+      },
+      "id": "4165585a-bdfd-4549-8736-a2277a856cde",
+      "name": "Parse Script",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.cfg.videoSubmitUrl }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: $json.cfg.videoModel,\n  prompt: $json.videoPrompt,\n  aspect_ratio: $json.cfg.aspectRatio,\n  duration: $json.cfg.videoSeconds\n}) }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "10abafac-5659-48f6-ae91-99f94382c66e",
+      "name": "Start Video (Higgsfield)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Remembers the video job ID so we can check on it.\nconst r = $input.first().json;\nconst id = r.id ?? r.job_id ?? r.request_id ?? r.task_id ?? r.data?.id ?? r.data?.job_id ?? r.generation_id;\nif (!id && !r.status_url) throw new Error('Could not find a job id in the video API response: ' + JSON.stringify(r).slice(0, 500));\nconst s = $('Parse Script').first().json;\nconst statusUrl = r.status_url || s.cfg.videoStatusUrlTemplate.replace('{id}', id);\nreturn [{ json: { ...s, jobId: id || null, statusUrl } }];\n"
+      },
+      "id": "ad330300-65f6-4c23-83a3-27ffd9be0f9b",
+      "name": "Save Job ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 60,
+        "unit": "seconds"
+      },
+      "id": "24a87cbc-6e08-4559-a516-6531e1c7a828",
+      "name": "Wait 60 Seconds",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1760,
+        300
+      ],
+      "webhookId": "9f6f1712-a0a8-470f-a3c5-181ecaff15ab"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Save Job ID').first().json.statusUrl }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "4a736f9d-5703-4e17-8c5d-91fc5f122d82",
+      "name": "Check Video Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1980,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Works with most video APIs: finds the status word and the finished video URL wherever they are.\nconst r = $input.first().json;\nconst job = $('Save Job ID').first().json;\n\nfunction findVideoUrl(obj, depth = 0) {\n  if (!obj || depth > 6) return null;\n  if (typeof obj === 'string') {\n    return /^https?:\\/\\/\\S+\\.(mp4|mov|webm)(\\?\\S*)?$/i.test(obj) ? obj : null;\n  }\n  if (Array.isArray(obj)) { for (const v of obj) { const u = findVideoUrl(v, depth + 1); if (u) return u; } return null; }\n  for (const [k, v] of Object.entries(obj)) {\n    if (typeof v === 'string' && /video|output|url/i.test(k) && /^https?:\\/\\//.test(v) && !/status|cancel|logs/i.test(k)) {\n      if (/\\.(mp4|mov|webm)/i.test(v) || /video/i.test(k)) return v;\n    }\n    const u = findVideoUrl(v, depth + 1); if (u) return u;\n  }\n  return null;\n}\n\nconst status = String(r.status ?? r.state ?? r.data?.status ?? r.data?.state ?? '').toLowerCase();\nconst videoUrl = findVideoUrl(r);\nconst attempt = $runIndex + 1;\nconst max = Number(job.cfg.maxPollAttempts || 20);\n\nlet state = 'pending';\nif (['failed', 'error', 'canceled', 'cancelled', 'nsfw', 'rejected'].includes(status)) state = 'failed';\nelse if (videoUrl && (['completed', 'succeeded', 'success', 'done', 'finished', 'ready', ''].includes(status) || !status)) state = 'ready';\nelse if (attempt >= max) state = 'failed';\n\nreturn [{ json: { ...job, state, videoUrl, providerStatus: status || 'unknown', attempt,\n  failReason: state === 'failed' ? (attempt >= max ? 'Timed out after ' + attempt + ' checks' : 'Provider status: ' + status) : null } }];\n"
+      },
+      "id": "1304d4f8-4529-4329-90c1-907f8d7c9288",
+      "name": "Read Video Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "932b53e7-4db5-46c5-adf9-7160e190bc2f",
+              "leftValue": "={{ $json.state }}",
+              "rightValue": "ready",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "fb3b177f-db34-4442-89ac-e36ad67a62f1",
+      "name": "Video Ready?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2420,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "19f9f9f2-4800-446a-a1ec-9d6d8ba9474e",
+              "leftValue": "={{ $json.state }}",
+              "rightValue": "failed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "cdcbad99-6bf2-40f9-956c-9f2781ce40b6",
+      "name": "Video Failed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2640,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.cfg.telegramChatId }}",
+        "text": "=⚠️ Starbiz video could not be made.\n\nTopic: {{ $json.topic }}\nReason: {{ $json.failReason }}\n\nNothing was posted. Check the video provider dashboard or try again.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "333cf04d-e32b-4f8d-82e5-47daaa322e78",
+      "name": "Alert: Video Failed",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2860,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendVideo",
+        "chatId": "={{ $json.cfg.telegramChatId }}",
+        "file": "={{ $json.videoUrl }}",
+        "additionalFields": {
+          "caption": "=🎬 New Starbiz video ready for review\nTopic: {{ $json.topic }}"
+        }
+      },
+      "id": "a783c22b-5635-4631-84b2-75d043ab6ad6",
+      "name": "Send Video Preview",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2640,
+        140
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Read Video Status').first().json.cfg.telegramChatId }}",
+        "text": "=📝 <b>Tap a box to copy it</b>\n\n<b>TITLE</b>\n<code>{{ $('Read Video Status').first().json.titleHtml }}</code>\n\n<b>DESCRIPTION</b>\n<pre>{{ $('Read Video Status').first().json.descriptionHtml }}</pre>\n\n{{ $('Read Video Status').first().json.flagged.length ? '⚠️ <b>Words to check:</b> ' + $('Read Video Status').first().json.flagged.join(', ') : '✅ No flagged words' }}\n\n🔗 <a href=\"{{ $('Read Video Status').first().json.videoUrl }}\">Open the video</a>",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML",
+          "disable_web_page_preview": true
+        }
+      },
+      "id": "79ff02de-9e87-4853-bd4c-b386b532d3e4",
+      "name": "Send Text to Copy",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2860,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "={{ $('Read Video Status').first().json.cfg.telegramChatId }}",
+        "message": "=👆 Watch the video and read the text above.\n\nTap the button to approve, edit, or reject.\nTo edit: copy the text above, fix it, and paste it into the form. Leave a box empty to keep the AI version.",
+        "responseType": "customForm",
+        "defineForm": "fields",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Decision",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Approve as is"
+                  },
+                  {
+                    "option": "Approve with my edits"
+                  },
+                  {
+                    "option": "Reject"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "New Title",
+              "fieldType": "text",
+              "placeholder": "Leave empty to keep the AI title (max 100 characters)"
+            },
+            {
+              "fieldLabel": "New Description",
+              "fieldType": "textarea",
+              "placeholder": "Leave empty to keep the AI description"
+            }
+          ]
+        },
+        "options": {
+          "messageButtonLabel": "Review & Edit",
+          "responseFormTitle": "Starbiz Video Review",
+          "responseFormDescription": "Approve, edit, or reject this video before it posts to YouTube.",
+          "responseFormButtonLabel": "Submit",
+          "limitWaitTime": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": 48,
+              "resumeUnit": "hours"
+            }
+          }
+        }
+      },
+      "id": "42be589c-e1cb-4291-b708-1aa6f635bf00",
+      "name": "Review & Edit (Telegram)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3080,
+        140
+      ],
+      "webhookId": "ff20edb5-c8ab-40eb-aaf3-2d1441462775"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Uses your edits when you typed them, otherwise keeps the AI text.\nconst form = $input.first().json || {};\nconst d = form.data || form;\nconst pick = (label) => {\n  const v = d[label] ?? d[label.toLowerCase()] ?? d[label.replace(/\\s+/g, '_').toLowerCase()];\n  return typeof v === 'string' ? v.trim() : '';\n};\nconst v = $('Read Video Status').first().json;\n\nlet decision = pick('Decision') || 'No response';\nconst newTitle = pick('New Title');\nconst newDescription = pick('New Description');\n\nconst finalTitle = (newTitle || v.title).slice(0, 100);\nconst finalDescription = (newDescription || v.description).slice(0, 4900);\nconst approved = decision.startsWith('Approve');\n\nreturn [{ json: { ...v, decision, approved: approved ? 'yes' : 'no', finalTitle, finalDescription,\n  edited: Boolean(newTitle || newDescription) } }];\n"
+      },
+      "id": "64710ec5-a9c4-4f77-ba71-f21c91d03ba1",
+      "name": "Apply My Edits",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3300,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "006d5f28-019b-4e39-b845-2962addc0cd7",
+              "leftValue": "={{ $json.approved }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "fb559d4a-866b-49ab-9b51-ab5feb23b222",
+      "name": "Approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3520,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.blotato.com/v2/posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  post: {\n    accountId: $json.cfg.blotatoYoutubeAccountId,\n    content: {\n      text: $json.finalDescription,\n      mediaUrls: [$json.videoUrl],\n      platform: 'youtube'\n    },\n    target: {\n      targetType: 'youtube',\n      title: $json.finalTitle,\n      privacyStatus: $json.cfg.youtubePrivacy,\n      shouldNotifySubscribers: true,\n      containsSyntheticMedia: true\n    }\n  }\n}) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "86a4edaf-c5d1-40c6-a24e-1885e58dda6e",
+      "name": "Post to YouTube (Blotato)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3740,
+        40
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Turns Blotato's answer into a simple result for the log and the Telegram message.\nconst r = $input.first().json;\nconst v = $('Apply My Edits').first().json;\nconst ok = !r.error && (r.postSubmissionId || r.id || r.success !== false);\nreturn [{ json: { ...v, posted: ok ? 'Posted' : 'Post failed',\n  blotatoId: r.postSubmissionId || r.id || '',\n  blotatoMessage: r.error ? (r.error.message || JSON.stringify(r.error)) : (r.message || '') } }];\n"
+      },
+      "id": "58ad4348-23ef-4b77-bd56-423945f50095",
+      "name": "Post Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3960,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.googleSheetId }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Topics"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.rowNumber }}",
+            "Status": "={{ $json.posted === 'Posted' ? 'Posted' : 'New' }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cb48496d-e0a0-445c-af9a-06fe0666fe97",
+      "name": "Mark Topic Used",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        4180,
+        40
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.googleSheetId }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Log"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now.toFormat('yyyy-MM-dd HH:mm') }}",
+            "Topic": "={{ $('Apply My Edits').first().json.topic }}",
+            "Title": "={{ $('Apply My Edits').first().json.finalTitle }}",
+            "Decision": "={{ $('Apply My Edits').first().json.decision }}",
+            "Edited": "={{ $('Apply My Edits').first().json.edited ? 'Yes' : 'No' }}",
+            "Result": "={{ $('Post Result').isExecuted ? $('Post Result').first().json.posted : 'Not posted' }}",
+            "Video URL": "={{ $('Apply My Edits').first().json.videoUrl }}",
+            "Blotato ID": "={{ $('Post Result').isExecuted ? $('Post Result').first().json.blotatoId : '' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Decision",
+              "displayName": "Decision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Edited",
+              "displayName": "Edited",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Result",
+              "displayName": "Result",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Video URL",
+              "displayName": "Video URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Blotato ID",
+              "displayName": "Blotato ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a5abda5c-3a17-4fad-9fa3-ad2f104b186f",
+      "name": "Log Result",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        4400,
+        40
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Apply My Edits').first().json.cfg.telegramChatId }}",
+        "text": "={{ $('Post Result').first().json.posted === 'Posted' ? '✅ Sent to YouTube via Blotato!' : '❌ Blotato could not post it.' }}\n\nTitle: {{ $('Apply My Edits').first().json.finalTitle }}\n{{ $('Post Result').first().json.blotatoMessage ? 'Details: ' + $('Post Result').first().json.blotatoMessage : 'Check the Blotato dashboard for the live link.' }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "fe267529-736a-4c3d-8009-b1a256d1e5b5",
+      "name": "Tell Me: Posted",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4620,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.googleSheetId }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Log"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now.toFormat('yyyy-MM-dd HH:mm') }}",
+            "Topic": "={{ $('Apply My Edits').first().json.topic }}",
+            "Title": "={{ $('Apply My Edits').first().json.finalTitle }}",
+            "Decision": "={{ $('Apply My Edits').first().json.decision }}",
+            "Edited": "={{ $('Apply My Edits').first().json.edited ? 'Yes' : 'No' }}",
+            "Result": "={{ $('Post Result').isExecuted ? $('Post Result').first().json.posted : 'Not posted' }}",
+            "Video URL": "={{ $('Apply My Edits').first().json.videoUrl }}",
+            "Blotato ID": "={{ $('Post Result').isExecuted ? $('Post Result').first().json.blotatoId : '' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Decision",
+              "displayName": "Decision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Edited",
+              "displayName": "Edited",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Result",
+              "displayName": "Result",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Video URL",
+              "displayName": "Video URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Blotato ID",
+              "displayName": "Blotato ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "679f83fa-2e2f-4957-ae2c-852a82ee2360",
+      "name": "Log Rejected",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3740,
+        260
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Apply My Edits').first().json.cfg.telegramChatId }}",
+        "text": "=🛑 Not posted ({{ $('Apply My Edits').first().json.decision }}).\nTopic: {{ $('Apply My Edits').first().json.topic }}\n\nThe topic stays \"New\" in the sheet, so it will be tried again next run. Change its Status to \"Skip\" if you never want it.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "8127abde-9c31-49d2-8f5d-b35ec6ddd26a",
+      "name": "Tell Me: Not Posted",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3960,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 1-2. IDEA + SCRIPT\nReads a \"New\" topic from the **Topics** sheet, then Claude writes the title, description, hashtags and video prompt.\n\n**Set up:** fill in the **Config** node. Anthropic credential = Header Auth, name `x-api-key`.",
+        "height": 240,
+        "width": 880,
+        "color": 5
+      },
+      "id": "bff5605d-4a77-4e37-b418-fabcfd6aff6e",
+      "name": "Note 27",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        380,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 3. VIDEO\nSends the prompt to your video provider and checks every 60 seconds until it's ready.\n\n**Only part to adjust:** check Higgsfield's API docs and update `videoSubmitUrl`, `videoStatusUrlTemplate` and the body in **Start Video** if their field names differ.",
+        "height": 240,
+        "width": 1300,
+        "color": 3
+      },
+      "id": "85c43b10-458f-4d44-a4d5-f5ccbc2eaa8a",
+      "name": "Note 28",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 5. YOU APPROVE (TELEGRAM)\nYou get the video, the text in tap-to-copy boxes, flagged words, and a **Review & Edit** button: Approve / Approve with my edits / Reject.",
+        "height": 200,
+        "width": 900,
+        "color": 4
+      },
+      "id": "6302e66c-79e9-4380-bff3-026243ad821d",
+      "name": "Note 29",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2600,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 6. POST (BLOTATO)\nPosts to YouTube with your final title and description, marks the topic used, logs everything, and tells you on Telegram.\nBlotato credential = Header Auth, name `blotato-api-key`.",
+        "height": 180,
+        "width": 1100,
+        "color": 6
+      },
+      "id": "4791db14-a133-4569-92c4-3293026603a7",
+      "name": "Note 30",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3700,
+        -150
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Run (Test)": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule: Mon/Wed/Fri 9am": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Get Topic Ideas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Topic Ideas": {
+      "main": [
+        [
+          {
+            "node": "Pick Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Topic": {
+      "main": [
+        [
+          {
+            "node": "Write Script (Claude)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Script (Claude)": {
+      "main": [
+        [
+          {
+            "node": "Parse Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Script": {
+      "main": [
+        [
+          {
+            "node": "Start Video (Higgsfield)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Video (Higgsfield)": {
+      "main": [
+        [
+          {
+            "node": "Save Job ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Job ID": {
+      "main": [
+        [
+          {
+            "node": "Wait 60 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 60 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Check Video Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Video Status": {
+      "main": [
+        [
+          {
+            "node": "Read Video Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Video Status": {
+      "main": [
+        [
+          {
+            "node": "Video Ready?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Ready?": {
+      "main": [
+        [
+          {
+            "node": "Send Video Preview",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Video Failed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Failed?": {
+      "main": [
+        [
+          {
+            "node": "Alert: Video Failed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 60 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Video Preview": {
+      "main": [
+        [
+          {
+            "node": "Send Text to Copy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Text to Copy": {
+      "main": [
+        [
+          {
+            "node": "Review & Edit (Telegram)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Review & Edit (Telegram)": {
+      "main": [
+        [
+          {
+            "node": "Apply My Edits",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply My Edits": {
+      "main": [
+        [
+          {
+            "node": "Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?": {
+      "main": [
+        [
+          {
+            "node": "Post to YouTube (Blotato)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post to YouTube (Blotato)": {
+      "main": [
+        [
+          {
+            "node": "Post Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Result": {
+      "main": [
+        [
+          {
+            "node": "Mark Topic Used",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Topic Used": {
+      "main": [
+        [
+          {
+            "node": "Log Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Result": {
+      "main": [
+        [
+          {
+            "node": "Tell Me: Posted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Rejected": {
+      "main": [
+        [
+          {
+            "node": "Tell Me: Not Posted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/New_York"
+  },
+  "pinData": {},
+  "tags": []
+}

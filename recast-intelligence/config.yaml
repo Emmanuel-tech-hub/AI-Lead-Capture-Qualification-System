@@ -1,0 +1,160 @@
+# Recast Intelligence configuration.
+# Edit this file to change what you monitor and when you hear about it. No code changes needed.
+
+newsletter:
+  name: Recast Intelligence
+  tagline: "Your personal briefing on AI, creative technology, and what's next."
+
+delivery:
+  timezone: America/New_York      # any IANA name, e.g. Africa/Lagos, Europe/London
+  daily_time: "07:30"             # when the daily briefing goes out (24h, in the timezone above)
+  monitor_every_minutes: 120      # how often sources are checked
+  daily_min_score: 6              # 1-10. Stories below this never make the daily briefing
+  max_stories: 6                  # top stories per briefing (substance over volume)
+  max_watching: 4                 # "Worth Watching" items
+  breaking_alerts: true           # send an immediate email for truly major news
+  breaking_min_score: 9           # 1-10. Only stories at or above this trigger an alert
+  max_breaking_per_day: 2
+  empty_day: skip                 # skip = send nothing on quiet days; short_note = send a one-line "no major updates" email
+  lookback_hours: 36              # ignore articles older than this
+
+ai:
+  enabled: true                   # false = keyword ranking and article excerpts only
+  triage_model: claude-opus-5-5   # scores every new article for relevance
+  briefing_model: claude-opus-5-5 # writes the newsletter
+  triage_effort: low
+  briefing_effort: medium
+
+# Context Claude uses to explain "why it matters to Recast". Edit freely.
+about_me: |
+  I am the founder of Recast ("Recast yourself"), an app that turns videos people love into their own
+  version starring themselves, a character, or their brand. Users paste a source video URL, upload a
+  reference image or video, pick a style (Funny/Meme, Cinematic, Social/Viral, Business, Creative),
+  choose a platform (TikTok, YouTube Shorts, Instagram Reels) and generate. Recast depends on AI video
+  generation (image-to-video, video-to-video, character consistency, motion transfer, lip-sync) and on
+  providers such as Higgsfield, Kling, Runway, Veo and Sora. I care about new models and features I could
+  offer as creative "recipes", API and pricing changes from providers, competitor launches, creator and
+  social-media trends, and developer tools (especially Claude Code) that speed up building Recast.
+
+# What you care about. Keywords are case-insensitive. Add, remove or rename topics freely.
+topics:
+  - id: ai_tools
+    name: AI Tools & Product Updates
+    weight: 1.0
+    keywords: [OpenAI, ChatGPT, GPT-5, GPT-6, Anthropic, Claude, Claude Code, Gemini, DeepMind, AI agent,
+               agents, API, model release, new model, pricing, developer platform, MCP, automation]
+  - id: ai_video
+    name: AI Video & Creative Tech
+    weight: 1.3
+    keywords: [Higgsfield, Kling, Runway, Veo, Sora, Luma, Pika, Hailuo, Seedance, Wan, Midjourney,
+               text-to-video, image-to-video, video-to-video, video generation, AI video, character consistency,
+               lip-sync, lip sync, motion control, avatar, generative video, creative tools]
+  - id: competitors
+    name: Competitors & Opportunities
+    weight: 1.2
+    keywords: [AI video app, video generator, creator tools, startup, raises, funding, launches, acquisition,
+               TikTok, YouTube Shorts, Instagram Reels, CapCut, viral, UGC, creator economy, face swap]
+  - id: tech
+    name: Technology & Other Interests
+    weight: 0.8
+    keywords: [SpaceX, Starship, Starlink, Tesla, xAI, Apple, Nvidia, Microsoft, Meta, Google]
+
+# Articles mentioning any of these are dropped.
+exclusions: [giveaway, coupon, promo code, "deal of the day", horoscope, sponsored post, price prediction]
+
+# Sources. kind: official = the company's own announcement; news = reporting; community = discussion.
+# verification records how each source was checked. Run `python -m recast_intel doctor` to test them all.
+sources:
+  # ---- Official sources ----
+  - id: claude_code_releases
+    name: Claude Code releases
+    kind: official
+    type: rss
+    url: https://github.com/anthropics/claude-code/releases.atom
+    topics: [ai_tools]
+    verification: "Fetched live 2026-10-18 (latest entry v2.1.302)."
+
+  - id: openai_news
+    name: OpenAI News
+    kind: official
+    type: rss
+    url: https://openai.com/news/rss.xml
+    topics: [ai_tools, ai_video]
+    verification: "Listed by feed directories and the OpenAI developer forum; not yet fetched from your machine."
+
+  - id: deepmind_blog
+    name: Google DeepMind Blog
+    kind: official
+    type: rss
+    url: https://deepmind.google/blog/rss.xml
+    topics: [ai_tools, ai_video]
+    verification: "Listed by feed directories (served gzip-compressed; handled automatically)."
+
+  - id: google_ai_blog
+    name: Google AI Blog
+    kind: official
+    type: rss
+    url: https://blog.google/technology/ai/rss/
+    fallback_urls: [https://blog.google/innovation-and-ai/technology/ai/rss/]
+    topics: [ai_tools, ai_video]
+    verification: "Listed by feed directories; two URL variants exist, doctor reports which one answers."
+
+  # ---- News reporting via Google News search (an undocumented but widely used RSS endpoint) ----
+  - id: news_anthropic
+    name: News - Anthropic & Claude
+    kind: news
+    type: google_news
+    query: '(Anthropic OR "Claude Code" OR "Claude AI") when:2d'
+    topics: [ai_tools]
+
+  - id: news_higgsfield
+    name: News - Higgsfield
+    kind: news
+    type: google_news
+    query: '"Higgsfield" when:7d'
+    topics: [ai_video]
+
+  - id: news_ai_video
+    name: News - AI video models
+    kind: news
+    type: google_news
+    query: '("Kling AI" OR "Runway" OR "Google Veo" OR "OpenAI Sora" OR "Luma AI" OR "Pika Labs") video when:2d'
+    topics: [ai_video]
+
+  - id: news_ai_video_startups
+    name: News - AI video startups
+    kind: news
+    type: google_news
+    query: '("AI video" OR "video generation") (startup OR launches OR raises OR funding) when:2d'
+    topics: [competitors, ai_video]
+
+  - id: news_gemini
+    name: News - Google Gemini
+    kind: news
+    type: google_news
+    query: '"Google Gemini" (launch OR update OR model OR feature) when:2d'
+    topics: [ai_tools]
+
+  - id: news_spacex
+    name: News - SpaceX
+    kind: news
+    type: google_news
+    query: 'SpaceX when:2d'
+    topics: [tech]
+
+  # ---- Community discussion: Hacker News search API (hn.algolia.com/api) ----
+  - id: hn_ai_video
+    name: Hacker News - AI video
+    kind: community
+    type: hn_algolia
+    query: AI video
+    min_points: 40
+    topics: [ai_video, competitors]
+
+  - id: hn_claude
+    name: Hacker News - Claude & agents
+    kind: community
+    type: hn_algolia
+    query: Claude
+    min_points: 80
+    topics: [ai_tools]
