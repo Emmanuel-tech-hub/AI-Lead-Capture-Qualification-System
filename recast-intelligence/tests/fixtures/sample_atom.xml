@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Test release notes</title>
+  <id>tag:test,2026:feed</id>
+  <updated>2026-10-16T20:53:06Z</updated>
+  <entry>
+    <id>tag:test,2026:1</id>
+    <title>v9.9.9 adds Claude agent hooks</title>
+    <link rel="alternate" href="https://example.com/releases/v9.9.9?utm_source=rss"/>
+    <updated>2026-10-16T20:53:06Z</updated>
+    <content type="html">&lt;p&gt;New &lt;b&gt;agent&lt;/b&gt; hooks.&lt;/p&gt;&lt;script&gt;alert(1)&lt;/script&gt;</content>
+  </entry>
+  <entry>
+    <id>tag:test,2026:2</id>
+    <title>Bad link entry</title>
+    <link rel="alternate" href="javascript:alert(1)"/>
+    <updated>2026-10-15T10:00:00Z</updated>
+  </entry>
+</feed>

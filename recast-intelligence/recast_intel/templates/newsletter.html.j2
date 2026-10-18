@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>{{ b.subject }}</title>
+<style>
+  body { margin:0; padding:0; background:#EEF0F8; }
+  a { color:#5B4BF5; }
+  @media only screen and (max-width:620px) {
+    .wrap { width:100% !important; }
+    .pad { padding-left:20px !important; padding-right:20px !important; }
+    .h1 { font-size:26px !important; line-height:32px !important; }
+    .headline { font-size:18px !important; line-height:25px !important; }
+  }
+</style>
+</head>
+<body style="margin:0;padding:0;background:#EEF0F8;-webkit-text-size-adjust:100%;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">{{ preheader }}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#EEF0F8;">
+<tr><td align="center" style="padding:24px 12px;">
+<table role="presentation" class="wrap" width="620" cellpadding="0" cellspacing="0" border="0" style="width:620px;max-width:620px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+  {% if banner %}
+  <tr><td style="background:#FFF4D6;border:1px dashed #E0A800;border-radius:12px;padding:10px 16px;color:#7A5300;font-size:13px;line-height:19px;font-weight:600;text-align:center;">{{ banner }}</td></tr>
+  <tr><td style="height:12px;line-height:12px;font-size:0;">&nbsp;</td></tr>
+  {% endif %}
+  <!-- Header -->
+  <tr><td class="pad" style="background:#0B1033;background-image:linear-gradient(135deg,#0B1033 0%,#1E1A5C 55%,#3B2A9E 100%);border-radius:18px 18px 0 0;padding:32px 36px 28px 36px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+      <td style="width:34px;height:34px;background:#5B4BF5;background-image:linear-gradient(135deg,#3B82F6,#8B5CF6);border-radius:9px;text-align:center;vertical-align:middle;color:#FFFFFF;font-size:15px;line-height:34px;">&#9654;</td>
+      <td style="padding-left:12px;color:#FFFFFF;font-size:15px;font-weight:700;letter-spacing:0.3px;">{{ cfg.name }}</td>
+    </tr></table>
+    <div class="h1" style="color:#FFFFFF;font-size:30px;line-height:37px;font-weight:800;margin:22px 0 6px 0;letter-spacing:-0.4px;">
+      {% if b.mode == 'breaking' %}Breaking update{% elif b.empty %}All quiet today{% else %}Your daily briefing{% endif %}
+    </div>
+    <div style="color:#B9B8F0;font-size:14px;line-height:20px;">{{ cfg.tagline }}</div>
+    <div style="color:#8D8BD6;font-size:12px;line-height:18px;margin-top:14px;text-transform:uppercase;letter-spacing:1.2px;">{{ date_label }}</div>
+  </td></tr>
+
+  <!-- Body card -->
+  <tr><td class="pad" style="background:#FFFFFF;padding:30px 36px 8px 36px;">
+
+    {% if b.opening %}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:26px;"><tr>
+      <td style="background:#F4F3FF;border-left:4px solid #6D5BF7;border-radius:10px;padding:16px 18px;color:#1C1B3A;font-size:15px;line-height:23px;">
+        {% if b.mode == 'breaking' %}<b style="color:#5B4BF5;">ALERT &middot; </b>{% else %}<b style="color:#5B4BF5;">TODAY &middot; </b>{% endif %}{{ b.opening }}
+      </td></tr></table>
+    {% endif %}
+
+    {% if b.empty %}
+      <p style="color:#3A3960;font-size:15px;line-height:23px;margin:0 0 24px 0;">No major developments crossed your threshold since the last briefing. Recast Intelligence keeps watching and will alert you if something significant happens.</p>
+    {% endif %}
+
+    {% if b.stories %}
+    <div style="color:#6B6A8E;font-size:12px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;margin:0 0 14px 0;">{% if b.mode == 'breaking' %}What happened{% else %}Top stories{% endif %}</div>
+    {% for s in b.stories %}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px 0;border:1px solid #E6E5F3;border-radius:14px;">
+      <tr><td style="padding:20px 20px 18px 20px;">
+        <div style="line-height:26px;">
+          <span style="display:inline-block;background:#0B1033;color:#FFFFFF;font-size:12px;font-weight:700;border-radius:20px;padding:2px 9px;margin-right:4px;">{{ loop.index }}</span>
+          <span style="display:inline-block;background:{{ topic_color(s.topic_name) }};color:#FFFFFF;font-size:11px;font-weight:700;border-radius:20px;padding:3px 10px;margin-right:4px;white-space:nowrap;">{{ s.topic_name }}</span>
+          <span style="display:inline-block;background:{{ kind_bg(s.kind) }};color:{{ kind_fg(s.kind) }};font-size:11px;font-weight:600;border-radius:20px;padding:3px 10px;white-space:nowrap;">{{ s.source_label }}</span>
+        </div>
+        <div class="headline" style="color:#0E0D2B;font-size:19px;line-height:26px;font-weight:700;margin:12px 0 8px 0;">{{ s.headline }}</div>
+        <div style="color:#3A3960;font-size:14.5px;line-height:22px;">{{ s.what_happened }}</div>
+        {% if s.why_it_matters %}
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:12px;"><tr>
+          <td style="background:#F7F6FF;border-radius:10px;padding:11px 14px;color:#2B2A55;font-size:14px;line-height:21px;">
+            <b style="color:#5B4BF5;">Why it matters &rarr; </b>{{ s.why_it_matters }}
+          </td></tr></table>
+        {% endif %}
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;"><tr>
+          <td style="background:#5B4BF5;background-image:linear-gradient(135deg,#3B82F6,#7C4DFF);border-radius:8px;">
+            <a href="{{ s.url }}" style="display:inline-block;padding:8px 14px;color:#FFFFFF;font-size:13px;font-weight:700;text-decoration:none;">Read source &rarr;</a>
+          </td>
+          <td style="padding-left:12px;color:#8A89A8;font-size:12px;">{{ s.published|ago }}</td>
+        </tr></table>
+        {% if s.also %}
+        <div style="color:#8A89A8;font-size:12px;line-height:18px;margin-top:10px;">Also covered by:
+          {% for x in s.also %}<a href="{{ x.url }}" style="color:#6D5BF7;text-decoration:none;">{{ x.publisher }}</a>{% if not loop.last %}, {% endif %}{% endfor %}
+        </div>
+        {% endif %}
+      </td></tr>
+    </table>
+    {% endfor %}
+    {% endif %}
+
+    {% if b.opportunities %}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:10px 0 22px 0;"><tr>
+      <td style="background:#14123F;background-image:linear-gradient(135deg,#14123F 0%,#2C1F7A 100%);border-radius:14px;padding:22px 22px 10px 22px;">
+        <div style="color:#C9C3FF;font-size:12px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;margin-bottom:12px;">&#10022; Opportunities for Recast</div>
+        {% for o in b.opportunities %}
+        <div style="margin:0 0 14px 0;">
+          <div style="color:#FFFFFF;font-size:15.5px;line-height:22px;font-weight:700;">{{ o.idea }}</div>
+          <div style="color:#C9C6EE;font-size:13.5px;line-height:20px;margin-top:3px;">{{ o.rationale }}
+            {% for l in o.links %}<a href="{{ l.url }}" style="color:#9FC2FF;text-decoration:none;white-space:nowrap;">[source {{ loop.index }}]</a> {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </td></tr></table>
+    {% endif %}
+
+    {% if b.watching %}
+    <div style="color:#6B6A8E;font-size:12px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;margin:6px 0 10px 0;">Worth watching</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:22px;">
+      {% for w in b.watching %}
+      <tr><td style="padding:10px 0;border-top:1px solid #EEEDF7;">
+        <a href="{{ w.url }}" style="color:#0E0D2B;font-size:14.5px;line-height:21px;font-weight:600;text-decoration:none;">{{ w.title }}</a>
+        <div style="color:#6B6A8E;font-size:13px;line-height:19px;margin-top:2px;">{% if w.note %}{{ w.note }} &middot; {% endif %}<span style="color:#8A89A8;">{{ w.source_label }}</span></div>
+      </td></tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+  </td></tr>
+
+  <!-- Footer -->
+  <tr><td class="pad" style="background:#FFFFFF;border-radius:0 0 18px 18px;padding:6px 36px 28px 36px;">
+    <div style="border-top:1px solid #EEEDF7;padding-top:16px;color:#8A89A8;font-size:12px;line-height:18px;">
+      {% if b.ai_written %}Summaries and "why it matters" notes are written by AI from the linked sources. Labels show whether a story is an official announcement, news reporting, or community discussion. Check the source before acting.{% else %}This edition was ranked by keywords and source authority, without AI summaries.{% endif %}
+      {% if b.failing_sources %}<br><span style="color:#B4532A;">Source check: {{ b.failing_sources|join(', ') }} could not be reached recently.</span>{% endif %}
+      <br>Generated {{ generated_label }} &middot; Edit your topics in config.yaml
+    </div>
+  </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>
